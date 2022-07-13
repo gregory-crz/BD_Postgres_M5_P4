@@ -1,108 +1,49 @@
-BEGIN;
-
-
-CREATE TABLE IF NOT EXISTS compania.departamento
-(
-    id_depa integer NOT NULL,
-    nombre_depa character(40) NOT NULL,
-    empleado_id integer NOT NULL,
-    proyecto_id integer NOT NULL,
-    local_id integer NOT NULL,
-    PRIMARY KEY (id_depa)
+drop table if exists departamentos;
+create table departamentos (
+	id_depa serial primary key,
+	nombre varchar(255) not null
 );
 
-CREATE TABLE IF NOT EXISTS compania.proyectos
-(
-    id_proyecto integer NOT NULL,
-    nombre_proyecto character(40) NOT NULL,
-    local_id integer,
-    empleado_id integer NOT NULL
+drop table if exists locales;
+create table locales (
+	id_local serial primary key,
+	nombre varchar(255) not null,
+	departamento_id integer not null,
+	foreign key (departamento_id) references departamentos(id_depa)
 );
 
-CREATE TABLE IF NOT EXISTS compania."tipoEmpleado"
-(
-    id_user integer NOT NULL,
-    cargo character(20) NOT NULL,
-    empleado_id integer NOT NULL,
-    depa_id integer NOT NULL,
-    PRIMARY KEY (id_user)
+drop table if exists proyectos;
+create table proyectos (
+	id_proyecto serial primary key,
+	nombre varchar(255) not null,
+	departamento_id integer not null,
+	local_id integer not null,
+	foreign key (departamento_id) references departamentos(id_depa),
+	foreign key (local_id) references locales(id_local)
 );
-
-CREATE TABLE IF NOT EXISTS compania.empleado
-(
-    id_empleado integer NOT NULL,
-    nombre_empleado character(100) NOT NULL,
-    rut_empleado character(10) NOT NULL,
-    direccion_empleado character(60) NOT NULL,
-    sexo_empleado "char" NOT NULL,
-    anonacimiento date,
-    salario character,
-    PRIMARY KEY (id_empleado)
+drop table if exists cargoempleado;
+create table cargoempleado (
+	cargo varchar(100) not null primary key,
+	fechaingreso date not null,
+	departamento_id integer not null,
+	foreign key (departamento_id) references departamentos(id_depa)
 );
-
-CREATE TABLE IF NOT EXISTS compania.dependientes
-(
-    id_dependientes integer NOT NULL,
-    nombre character(100),
-    rut character(10),
-    sexo "char",
-    fhechanacimiento date,
-    relacion character(20),
-    empleado_id integer,
-    PRIMARY KEY (id_dependientes)
+drop table if exists empleados;
+create table empleados (
+	rut varchar(12) not null primary key,
+	nombre varchar(100) not null,
+	direccion varchar(255) not null,
+	salario varchar(255) not null,
+	sexo char,
+	anonacimiento integer,
+	cargoempleado_cargo varchar(100),
+	foreign key (cargoempleado_cargo) references cargoempleado(cargo)
 );
-
-CREATE TABLE IF NOT EXISTS compania."proyectos_tipoEmpleado"
-(
-    proyectos_empleado_id integer NOT NULL,
-    "tipoEmpleado_id_user" integer NOT NULL
+drop table if exists proyec_empleado;
+create table proyec_empleado(
+	id serial primary key,
+	empleado_rut varchar(12),
+	proyectos_id integer,
+	foreign key (empleado_rut) references empleados(rut),
+	foreign key (proyectos_id) references proyectos(id_proyecto)
 );
-
-ALTER TABLE IF EXISTS compania.proyectos
-    ADD FOREIGN KEY (id_proyecto)
-    REFERENCES compania.departamento (proyecto_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-
-ALTER TABLE IF EXISTS compania."tipoEmpleado"
-    ADD FOREIGN KEY (empleado_id)
-    REFERENCES compania.empleado (id_empleado) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-
-ALTER TABLE IF EXISTS compania."tipoEmpleado"
-    ADD FOREIGN KEY (id_user)
-    REFERENCES compania.departamento (empleado_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-
-ALTER TABLE IF EXISTS compania.dependientes
-    ADD FOREIGN KEY (empleado_id)
-    REFERENCES compania.empleado (id_empleado) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-
-ALTER TABLE IF EXISTS compania."proyectos_tipoEmpleado"
-    ADD FOREIGN KEY (proyectos_empleado_id)
-    REFERENCES compania.proyectos (empleado_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-
-ALTER TABLE IF EXISTS compania."proyectos_tipoEmpleado"
-    ADD FOREIGN KEY ("tipoEmpleado_id_user")
-    REFERENCES compania."tipoEmpleado" (id_user) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-END;
